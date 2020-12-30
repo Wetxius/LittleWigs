@@ -35,7 +35,6 @@ function mod:OnBossEnable()
 	self:Log("SPELL_CAST_START", "LoadedDiceManOWar", 257458)
 	self:Log("SPELL_CAST_SUCCESS", "SwiftwindSaber", 257278)
 	self:Log("SPELL_AURA_APPLIED", "CannonBarrage", 257305)
-	self:Log("SPELL_CAST_SUCCESS", "Avastye", 257316)
 	self:Log("SPELL_AURA_APPLIED", "BlackPowderBomb", 257314)
 end
 
@@ -43,7 +42,7 @@ function mod:OnEngage()
 	stage = 1
 	self:CDBar(257278, 11) -- Swiftwind Saber
 	self:CDBar(257305, 20) -- Cannon Barrage
-	self:CDBar(257316, 32, CL.next_add) -- Avast, ye!
+	self:CDBar(257316, 84.4, CL.next_add) -- Avast, ye!
 end
 
 --------------------------------------------------------------------------------
@@ -52,7 +51,7 @@ end
 
 function mod:UNIT_SPELLCAST_SUCCEEDED(_, _, _, spellId)
 	if spellId == 257454 then -- Swiftwind Saber with Loaded Dice: All Hands!
-		self:Message2(257278, "yellow")
+		self:Message(257278, "yellow")
 		self:PlaySound(257278, "alert", "watchstep")
 		self:CDBar(257278, 15)
 	end
@@ -60,26 +59,28 @@ end
 
 function mod:LoadedDiceAllHands(args)
 	stage = 2
-	self:Message2("stages", "cyan", args.spellName, args.spellId)
+	self:Message("stages", "cyan", args.spellName, args.spellId)
 	self:PlaySound("stages", "info", "stage")
 	self:Bar(257278, 10.9) -- Swiftwind Saber
 	self:Bar(257305, 17) -- Cannon Barrage
-	self:CDBar(257316, 28.5, CL.next_add) -- Avast, ye!
 end
 
 function mod:LoadedDiceManOWar(args)
 	stage = 3
-	self:Message2("stages", "cyan", args.spellName, args.spellId)
+	self:Message("stages", "cyan", args.spellName, args.spellId)
 	self:PlaySound("stages", "info", "stage")
 	self:Bar(257278, 10.9) -- Swiftwind Saber
 	self:Bar(257305, 17) -- Cannon Barrage
-	self:CDBar(257316, 23.5, CL.next_add) -- Avast, ye!
+	local avastYeTimer = self:BarTimeLeft(257316)
+	if avastYeTimer > 2.4 then -- Timer doesn't reset but adds come out more often in stage 3
+		self:CDBar(257316, avastYeTimer - 2.4, CL.next_add) -- Avast, ye!
+	end
 end
 
 function mod:SwiftwindSaber(args)
-	self:Message2(args.spellId, "yellow")
+	self:Message(args.spellId, "yellow")
 	self:PlaySound(args.spellId, "alert", "watchstep")
-	self:CDBar(args.spellId, (stage == 1) and 15.8 or 12.2)
+	self:CDBar(args.spellId, stage == 1 and 15.8 or 12.2)
 end
 
 do
@@ -89,7 +90,7 @@ do
 			self:PersonalMessage(257305)
 			self:PlaySound(257305, "warning", "moveout")
 		else
-			self:Message2(257305, "orange") -- Cannon Barrage
+			self:Message(257305, "orange") -- Cannon Barrage
 			self:PlaySound(257305, "alarm", "watchstep")
 		end
 		onMe = nil
@@ -109,18 +110,20 @@ do
 end
 
 function mod:Avastye(args)
-	self:Message2(args.spellId, "red", CL.add_spawned)
-	self:PlaySound(args.spellId, "long", "addincoming")
-	self:CDBar(args.spellId, (stage == 3) and 18.2 or 20.6, CL.next_add)
+	self:Message(257316, "red", CL.add_spawned)
+	self:PlaySound(257316, "long", "addincoming")
 end
 
 function mod:BlackPowderBomb(args)
 	if args.sourceGUID ~= args.destGUID then -- The add buffs itself with the same spell id
-		self:TargetMessage2(args.spellId, "yellow", args.destName, self:SpellName(244657), args.spellId) -- Fixate
+		self:TargetMessage(args.spellId, "yellow", args.destName, self:SpellName(244657), args.spellId) -- Fixate
 		if self:Me(args.destGUID) then
 			self:PlaySound(args.spellId, "warning", "fixate")
 			self:Say(args.spellId, self:SpellName(244657)) -- Fixate
 			self:Flash(args.spellId)
+		else
+			self:PlaySound(args.spellId, "long", nil, args.destName)
 		end
+		self:CDBar(257316, stage == 3 and 18.2 or 20.6, CL.next_add) -- Avast, ye!
 	end
 end

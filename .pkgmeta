@@ -1,6 +1,11 @@
 package-as: LittleWigs
 wowi-archive-previous: no
 
-ignore:
-  - .travis.yml
-  - README.md
+move-folders:
+    LittleWigs/Classic: LittleWigs_Classic
+    LittleWigs/TBC: LittleWigs_BurningCrusade
+    LittleWigs/WotLK: LittleWigs_WrathOfTheLichKing
+    LittleWigs/Cataclysm: LittleWigs_Cataclysm
+    LittleWigs/MoP: LittleWigs_MistsOfPandaria
+    LittleWigs/WoD: LittleWigs_WarlordsOfDraenor
+    LittleWigs/Legion: LittleWigs_Legion
